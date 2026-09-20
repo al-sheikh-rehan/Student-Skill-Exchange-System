@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Skill Exchange System</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}.app{max-width:1100px;margin:auto;padding:24px}.hero{background:linear-gradient(135deg,#18243a,#344b72);color:#fff;border-radius:22px;padding:30px;margin-bottom:18px}.hero h1{margin:0 0 8px}.hero p{margin:0;color:#dbe6f7}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:#fff;border:1px solid #e3e8ef;border-radius:18px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.06)}h2{margin-top:0}label{display:block;font-weight:700;margin:12px 0 6px}input,select,textarea{width:100%;padding:11px;border:1px solid #cfd6df;border-radius:9px}textarea{min-height:80px;resize:vertical}.btn{margin-top:14px;border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;background:#172033;color:white}.list{margin-top:14px;display:grid;gap:10px}.item{border:1px solid #e5e7eb;padding:12px;border-radius:12px}.tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;font-size:12px;margin:3px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tab{border:1px solid #cfd6df;background:#fff;border-radius:9px;padding:9px 12px;cursor:pointer}.tab.active{background:#172033;color:#fff}.hidden{display:none}.note{color:#667085;font-size:14px;line-height:1.5}@media(max-width:800px){.grid{grid-template-columns:1fr}.app{padding:14px}}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+<h1>🎓 Student Skill Exchange System</h1>
+<p>Demo interface for a DBMS project that connects students for skill-to-skill exchange.</p>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2>🔎 Find a Skill</h2>
+<label for="search">Search skill</label>
+<input id="search" placeholder="e.g. MySQL, C Programming">
+<div id="skills" class="list"></div>
+</section>
+
+<section class="card">
+<h2>🤝 Create Skill Request</h2>
+<label>Your Name</label><input id="from" placeholder="Student name">
+<label>Provider Name</label><input id="to" placeholder="Student who can teach">
+<label>Requested Skill</label><select id="requested"><option>MySQL</option><option>C Programming</option><option>Web Development</option><option>Graphic Design</option><option>Video Editing</option><option>Python</option></select>
+<label>Offered Skill</label><select id="offered"><option>C Programming</option><option>MySQL</option><option>Web Development</option><option>Graphic Design</option><option>Video Editing</option><option>Python</option></select>
+<label>Message</label><textarea id="message" placeholder="Write your exchange proposal"></textarea>
+<button class="btn" id="submit">Send Request</button>
+<p class="note">This browser demo uses sample data. The MySQL schema and queries are available in <strong>student_skill_exchange.sql</strong>.</p>
+</section>
+
+<section class="card" style="grid-column:1/-1">
+<h2>📊 Database Modules</h2>
+<div class="tabs">
+<button class="tab active" data-tab="students">Students</button>
+<button class="tab" data-tab="skillsTab">Skills</button>
+<button class="tab" data-tab="requests">Skill Requests</button>
+</div>
+<div id="students" class="tabContent"></div>
+<div id="skillsTab" class="tabContent hidden"></div>
+<div id="requests" class="tabContent hidden"></div>
+</section>
+</div>
+</div>
+<script>
+const students=[
+{id:1,name:'Aarav Kumar',course:'Diploma in Computer Science',semester:4,skills:[['C Programming','Advanced'],['MySQL','Intermediate']]},
+{id:2,name:'Priya Sharma',course:'B.Tech CSE',semester:3,skills:[['Web Development','Advanced'],['Graphic Design','Intermediate']]},
+{id:3,name:'Rohit Verma',course:'BCA',semester:2,skills:[['Video Editing','Advanced'],['Python','Intermediate']]},
+{id:4,name:'Neha Singh',course:'B.Tech IT',semester:5,skills:[['MySQL','Advanced'],['Web Development','Intermediate']]}
+];
+let requests=[
+{from:'Aarav Kumar',to:'Priya Sharma',requested:'Web Development',offered:'C Programming',status:'Pending'},
+{from:'Priya Sharma',to:'Aarav Kumar',requested:'MySQL',offered:'Web Development',status:'Accepted'}
+];
+const skillCatalog=['C Programming','MySQL','Web Development','Graphic Design','Video Editing','Python'];
+const skillsEl=document.getElementById('skills');
+function renderSkills(filter=''){
+ const q=filter.toLowerCase();
+ const data=students.flatMap(s=>s.skills.map(x=>({student:s,skill:x[0],level:x[1]}))).filter(x=>x.skill.toLowerCase().includes(q));
+ skillsEl.innerHTML=data.length?data.map(x=>'<div class="item"><strong>'+x.skill+'</strong><br>'+x.student.name+' — '+x.student.course+'<br><span class="tag">'+x.level+'</span></div>').join(''):'<div class="item">No matching skill found.</div>';
+}
+function renderModules(){
+ document.getElementById('students').innerHTML=students.map(s=>'<div class="item"><strong>'+s.name+'</strong><br>'+s.course+' · Semester '+s.semester+'<br>'+s.skills.map(x=>'<span class="tag">'+x[0]+' · '+x[1]+'</span>').join(' ' )+'</div>').join('');
+ document.getElementById('skillsTab').innerHTML=skillCatalog.map((x,i)=>'<div class="item"><strong>'+x+'</strong><br>Skill ID: '+(i+1)+'<br>Students offering: '+students.filter(s=>s.skills.some(k=>k[0]===x)).length+'</div>').join('');
+ document.getElementById('requests').innerHTML=requests.map(r=>'<div class="item"><strong>'+r.from+' → '+r.to+'</strong><br>Request: '+r.requested+' · Offer: '+r.offered+'<br><span class="tag">'+r.status+'</span></div>').join('');
+}
+document.getElementById('search').addEventListener('input',e=>renderSkills(e.target.value));
+document.getElementById('submit').onclick=()=>{
+ const from=document.getElementById('from').value.trim(),to=document.getElementById('to').value.trim();
+ if(!from||!to){alert('Please enter your name and provider name.');return;}
+ requests.unshift({from,to,requested:document.getElementById('requested').value,offered:document.getElementById('offered').value,status:'Pending'});
+ renderModules(); alert('Skill request created successfully!');
+};
+document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+ document.querySelectorAll('.tabContent').forEach(x=>x.classList.add('hidden'));document.getElementById(btn.dataset.tab).classList.remove('hidden');
+});
+renderSkills();renderModules();
+</script>
+</body>
+</html>
